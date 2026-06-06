@@ -1,0 +1,33 @@
+# prvis-ai — step-ca PKI
+services:
+  step-ca:
+    image: smallstep/step-ca:latest
+    container_name: step-ca
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    environment:
+      - DOCKER_STEPCA_INIT_NAME=prvis-ca
+      - DOCKER_STEPCA_INIT_DNS_NAMES=step-ca,localhost,pki.prvis.com
+      - DOCKER_STEPCA_INIT_ACME=true
+      - DOCKER_STEPCA_INIT_SSH=true
+      - DOCKER_STEPCA_INIT_PASSWORD=${STEP_CA_PASSWORD:-changeme}
+      - FLEET_SCEP_CHALLENGE=${FLEET_SCEP_CHALLENGE:-changeme}
+      - STEP_CA_KEYCLOAK_SECRET=${STEP_CA_KEYCLOAK_SECRET:-}
+    volumes:
+      - step-ca-data:/home/step
+      - ./ca.json:/home/step/config/ca.json:ro
+    networks:
+      - agent-network
+
+volumes:
+  step-ca-data:
+
+networks:
+  agent-network:
+    external: true
